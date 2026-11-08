@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: koya-clinic-booking
+    runtime: node
+    plan: free
+    buildCommand: npm ci
+    startCommand: node server.js
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: PORT
+        value: 4321
+      - key: API_KEY
+        generateValue: false
+        value: koya-booking-9f3c2f1a7d5e6b4c
