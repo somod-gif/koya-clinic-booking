@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Clinic Booking</title>
+  <style>
+    :root { --bg: #f6f4ef; --card: #fff; --ink: #1c1917; --muted: #78716c; --line: #e7e5e4; --brand: #0f766e; --brand-ink: #0f766e; --danger: #b91c1c; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--ink); }
+    main { max-width: 720px; margin: 0 auto; padding: 24px 16px 64px; }
+    h1 { font-size: 24px; margin: 0 0 4px; }
+    .sub { color: var(--muted); font-size: 14px; margin-bottom: 20px; }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin-bottom: 12px; }
+    .slot { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; justify-content: space-between; }
+    .slot .when { font-weight: 600; }
+    .slot .who { color: var(--muted); font-size: 13px; }
+    .btn { background: var(--brand); color: #fff; border: 0; border-radius: 10px; padding: 10px 14px; font-weight: 600; cursor: pointer; }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+    .btn.ghost { background: transparent; color: var(--brand); border: 1px solid var(--brand); }
+    input, textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; font-size: 14px; margin: 6px 0 10px; }
+    label { font-size: 13px; font-weight: 600; color: var(--muted); display: block; margin-top: 8px; }
+    #banner { border-radius: 10px; padding: 10px 12px; margin-bottom: 12px; font-size: 14px; }
+    #banner.ok { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+    #banner.err { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+    .empty { color: var(--muted); font-size: 14px; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Clinic booking</h1>
+    <p class="sub">Book a slot with the clinic. This page talks to the booking API.</p>
+    <div id="banner" class=""></div>
+    <section id="slots"></section>
+    <section id="book">
+      <h2>Book a slot</h2>
+      <label for="slotId">Slot</label>
+      <select id="slotId" disabled></select>
+      <label for="bkName">Name</label>
+      <input id="bkName" placeholder="Ada Obi" autocomplete="name" />
+      <label for="bkEmail">Email</label>
+      <input id="bkEmail" placeholder="ada@example.com" autocomplete="email" inputmode="email" />
+      <button id="bkSubmit" class="btn">Book</button>
+      <button id="bkMine" class="btn ghost">My bookings</button>
+      <div id="confirm" class="card" hidden></div>
+    </section>
+  </main>
+  <script>
+    const API_BASE = window.location.origin;
+    const API_KEY = "koya-booking-9f3c2f1a7d5e6b4c";
+
+    const banner = document.getElementById('banner');
+    const slotsEl = document.getElementById('slots');
+    const slotSelect = document.getElementById('slotId');
+    const confirmEl = document.getElementById('confirm');
+    const bkSubmit = document.getElementById('bkSubmit');
+    const bkMine = document.getElementById('bkMine');
+    let bookingsCache = [];
+
+    function showBanner(kind, text) {
+      banner.className = 'banner ' + (kind || '');
+      banner.textContent = text;
+    }
+
+    async function slots() {
+      const res = await fetch(API_BASE + '/slots', { headers: { 'X-API-Key': API_KEY, 'Content-Type': 'application/json' } });
+      if (!res.ok) throw new Error('slots failed');
+      const data = await res.json();
+      return data.slots || [];
+    }
+
+    async function refreshSlots() {
+      const list = await slots();
+      slotsEl.innerHTML = '';
+      slotSelect.innerHTML = '';
+      if (!list.length) { slotsEl.innerHTML = '<p class="empty">No slots available.</p>'; slotSelect.disabled = true; return; }
+      for (const s of list) {
+        const div = document.createElement('div');
+        div.className = 'card slot';
+        div.innerHTML = `<span class="when">${s.start} → ${s.end}</span><span class="who">${s.provider}</span><button class="btn" data-slot="${s.id}" ${s.available ? '' : 'disabled'}>Book</button>`;
+        slotsEl.appendChild(div);
+        const btn = div.querySelector('button');
+        btn.addEventListener('click', async () => {
+          slotSelect.value = s.id;
+          confirmEl.hidden = true;
+          bkName.value = '';
+          bkEmail.value = '';
+        });
+        slotSelect.add(new Option(`${s.provider} · ${s.start}`, s.id));
+      }
+      slotSelect.disabled = false;
+      slotSelect.value = '';
+    }
+
+    bkSubmit.addEventListener('click', async () => {
+      bkSubmit.disabled = true;
+      showBanner('', '');
+      confirmEl.hidden = true;
+      const slotId = slotSelect.value;
+      const name = document.getElementById('bkName').value.trim();
+      const email = document.getElementById('bkEmail').value.trim().toLowerCase();
+      try {
+        const res = await fetch(API_BASE + '/bookings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-API-Key': API_KEY, 'Idempotency-Key': 'web-' + email + '-' + slotId },
+          body: JSON.stringify({ slot_id: slotId, name, email }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+          confirmEl.hidden = false;
+          confirmEl.innerHTML = `<div>Booked! Reference: <strong>${data.id}</strong> — status ${data.status}.</div>`;
+          showBanner('ok', 'Booked successfully.');
+          refreshSlots();
+        } else {
+          showBanner('err', data.error || 'Booking failed');
+        }
+      } catch (e) {
+        showBanner('err', String(e && e.message ? e.message : e));
+      } finally { bkSubmit.disabled = false; }
+    });
+
+    bkMine.addEventListener('click', async () => {
+      const email = document.getElementById('bkEmail').value.trim().toLowerCase();
+      if (!email) { showBanner('err', 'Enter your email first'); return; }
+      const res = await fetch(API_BASE + '/bookings?email=' + encodeURIComponent(email), { headers: { 'X-API-Key': API_KEY } });
+      const data = await res.json();
+      bookingsCache = data.bookings || [];
+      confirmEl.innerHTML = '<div>Your recent bookings: ' + bookingsCache.length + '</div>';
+      confirmEl.hidden = false;
+    });
+
+    (async () => {
+      try { await refreshSlots(); } catch (e) { showBanner('err', String(e && e.message ? e.message : e)); }
+    })();
+  </script>
+</body>
+</html>

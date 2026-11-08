@@ -1,0 +1,5 @@
+node_modules/
+booking.db
+booking.db-wal
+booking.db-shm
+*.log

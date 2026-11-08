@@ -1,0 +1,16 @@
+{
+  "name": "koya-clinic-booking",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Koya Cohort 4 Task 1 - Clinic booking API",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.22.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
