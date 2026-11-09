@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { sql, API_KEY, getBooking } from '../../../../lib/db';
+import { sql, API_KEY, getBooking } from '../../../lib/db';
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const apiKey = req.headers.get('x-api-key');

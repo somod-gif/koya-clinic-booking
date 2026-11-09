@@ -42,7 +42,7 @@ export default function Home() {
   const loadSlots = useCallback(async () => {
     setSlotsLoading(true);
     try {
-      const res = await fetch('/api/slots', { headers: { 'X-API-Key': API_KEY } });
+      const res = await fetch('/slots', { headers: { 'X-API-Key': API_KEY } });
       const data = await res.json();
       setSlots(Array.isArray(data.slots) ? data.slots : []);
     } catch {
@@ -80,7 +80,7 @@ export default function Home() {
     setBusy(true);
     setBanner({ kind: '', text: '' });
     try {
-      const res = await fetch('/api/bookings', {
+      const res = await fetch('/bookings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-API-Key': API_KEY },
         body: JSON.stringify({ slot_id: selected.id, name: name.trim(), email: email.trim() }),
@@ -113,7 +113,7 @@ export default function Home() {
     }
     setBanner({ kind: '', text: '' });
     try {
-      const res = await fetch(`/api/bookings?email=${encodeURIComponent(target)}&limit=50`, {
+      const res = await fetch(`/bookings?email=${encodeURIComponent(target)}&limit=50`, {
         headers: { 'X-API-Key': API_KEY },
       });
       const data = await res.json();
@@ -130,7 +130,7 @@ export default function Home() {
 
   async function cancelBooking(id: string) {
     try {
-      const res = await fetch(`/api/bookings/${encodeURIComponent(id)}`, {
+      const res = await fetch(`/bookings/${encodeURIComponent(id)}`, {
         method: 'DELETE',
         headers: { 'X-API-Key': API_KEY },
       });
@@ -174,9 +174,6 @@ export default function Home() {
             <i aria-hidden="true" />
             Booking open
           </span>
-          <a className="ghost-link" href="/api/slots" target="_blank" rel="noreferrer">
-            API
-          </a>
         </div>
       </header>
 

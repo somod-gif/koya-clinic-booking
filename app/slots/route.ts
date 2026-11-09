@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { sql, ensureSchema, API_KEY } from '../../../lib/db';
+import { sql, ensureSchema, API_KEY } from '../../lib/db';
 
 export async function GET(req: NextRequest) {
   const apiKey = req.headers.get('x-api-key');

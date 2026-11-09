@@ -10,7 +10,7 @@ import {
   getBooking,
   listBookings,
   rateBucket,
-} from '../../../lib/db';
+} from '../../lib/db';
 
 export async function GET(req: NextRequest) {
   const apiKey = req.headers.get('x-api-key');

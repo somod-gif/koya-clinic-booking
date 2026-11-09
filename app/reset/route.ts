@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { sql, API_KEY, resetAll } from '../../../lib/db';
+import { sql, API_KEY, resetAll } from '../../lib/db';
 
 export async function POST(req: NextRequest) {
   const apiKey = req.headers.get('x-api-key');

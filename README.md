@@ -2,7 +2,7 @@
 
 Clinic booking API built with **Next.js full stack** (App Router) and **Neon Postgres** for the Koya Cohort 4 assessment.
 
-- **Local API:** `http://localhost:3000/api`
+- **Local API:** `http://localhost:3000`
 - **Web page:** `http://localhost:3000/`
 - **Stack:** Next.js 16 (route handlers + React client page), TypeScript, `@neondatabase/serverless` over Neon's HTTP driver
 
@@ -30,12 +30,12 @@ All endpoints require `X-API-Key` (missing/wrong → `401 {"error": "..."}`).
 
 | Method | Path | Level | Purpose |
 | --- | --- | --- | --- |
-| POST | `/api/reset` | 1 | Body `{ "slots": [{ "id", "provider", "start", "end" }] }` — deletes all bookings/slots and replaces slots (incl. past). |
-| GET | `/api/slots` | 1 | `?provider=` exact filter → `{ slots: [{ id, provider, start, end, available }] }`, earliest start first. |
-| POST | `/api/bookings` | 1–5 | Body `{ slot_id, name, email }`. L1 → 201 confirmed. L2 → 400 missing/invalid/started, 404 unknown slot. L3 → 409 already booked (DB-enforced unique index). L4 → `Idempotency-Key`: same key+body → same response; different body → 422. L5 → 5 attempts/email/minute → 429 + `Retry-After`. |
-| GET | `/api/bookings?email=&limit=&cursor=` | 4 | Person's bookings, oldest first, cursor pagination. `limit` 1–50 (default 10, else 400). |
-| GET | `/api/bookings/[id]` | 1 | 200 / 404. |
-| DELETE | `/api/bookings/[id]` | 3 | Cancel → `cancelled`, frees slot. 200 / 404 / 409. |
+| POST | `/reset` | 1 | Body `{ "slots": [{ "id", "provider", "start", "end" }] }` — deletes all bookings/slots and replaces slots (incl. past). |
+| GET | `/slots` | 1 | `?provider=` exact filter → `{ slots: [{ id, provider, start, end, available }] }`, earliest start first. |
+| POST | `/bookings` | 1–5 | Body `{ slot_id, name, email }`. L1 → 201 confirmed. L2 → 400 missing/invalid/started, 404 unknown slot. L3 → 409 already booked (DB-enforced unique index). L4 → `Idempotency-Key`: same key+body → same response; different body → 422. L5 → 5 attempts/email/minute → 429 + `Retry-After`. |
+| GET | `/bookings?email=&limit=&cursor=` | 4 | Person's bookings, oldest first, cursor pagination. `limit` 1–50 (default 10, else 400). |
+| GET | `/bookings/[id]` | 1 | 200 / 404. |
+| DELETE | `/bookings/[id]` | 3 | Cancel → `cancelled`, frees slot. 200 / 404 / 409. |
 
 Booking object: `{ id, slot_id, name, email, status, created_at }`.
 
@@ -48,7 +48,7 @@ Neon Postgres, schema auto-created on first request (`ensureSchema()` in `lib/db
 - `idempotency_keys (idem_key, body_hash, status, booking_id)`
 - `rate_attempts (email, minute_start, attempts)`
 
-`POST /api/reset` clears all four tables so runs are repeatable.
+`POST /reset` clears all four tables so runs are repeatable.
 
 ## Tests
 
