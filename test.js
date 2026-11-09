@@ -1,6 +1,6 @@
 ﻿// Local smoke test for the Koya clinic booking API.
-// Run with: node test.js  (against http://localhost:4321)
-const BASE = 'http://localhost:4321';
+// Run with: node test.js  (against http://localhost:3000)
+const BASE = 'http://localhost:3000';
 const KEY = 'koya-booking-9f3c2f1a7d5e6b4c';
 const results = [];
 

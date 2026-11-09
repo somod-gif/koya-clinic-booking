@@ -4,7 +4,7 @@
   "private": true,
   "description": "Koya Cohort 4 Task 1 - Clinic booking API (Next.js full stack)",
   "scripts": {
-    "dev": "next dev -p 4321",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start"
   },

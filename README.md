@@ -2,8 +2,8 @@
 
 Clinic booking API built with **Next.js full stack** (App Router) and **Neon Postgres** for the Koya Cohort 4 assessment.
 
-- **Local API:** `http://localhost:4321/api`
-- **Web page:** `http://localhost:4321/`
+- **Local API:** `http://localhost:3000/api`
+- **Web page:** `http://localhost:3000/`
 - **Stack:** Next.js 16 (route handlers + React client page), TypeScript, `@neondatabase/serverless` over Neon's HTTP driver
 
 ## Run locally
@@ -21,7 +21,7 @@ Environment variables:
 | Var | Default | Notes |
 | --- | --- | --- |
 | `DATABASE_URL` | — | Neon Postgres connection string (pooled). Required. |
-| `PORT` | `4321` | Server port. |
+| `PORT` | `3000` | Server port (Next.js default). |
 | `API_KEY` | `koya-booking-9f3c2f1a7d5e6b4c` | Key the grader sends in `X-API-Key`. |
 
 ## API
