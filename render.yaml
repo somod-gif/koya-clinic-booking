@@ -3,13 +3,12 @@ services:
     name: koya-clinic-booking
     runtime: node
     plan: free
-    buildCommand: npm ci
-    startCommand: node server.js
+    buildCommand: npm ci && npm run build
+    startCommand: npm run start
     envVars:
       - key: NODE_VERSION
-        value: 20
-      - key: PORT
-        value: 4321
+        value: 22
       - key: API_KEY
-        generateValue: false
         value: koya-booking-9f3c2f1a7d5e6b4c
+      - key: DATABASE_URL
+        sync: false

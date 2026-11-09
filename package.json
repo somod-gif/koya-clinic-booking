@@ -2,15 +2,24 @@
   "name": "koya-clinic-booking",
   "version": "1.0.0",
   "private": true,
-  "description": "Koya Cohort 4 Task 1 - Clinic booking API",
-  "main": "server.js",
+  "description": "Koya Cohort 4 Task 1 - Clinic booking API (Next.js full stack)",
   "scripts": {
-    "start": "node server.js"
+    "dev": "next dev -p 4321",
+    "build": "next build",
+    "start": "next start"
   },
   "dependencies": {
-    "express": "^4.22.3"
+    "@neondatabase/serverless": "^1.2.0",
+    "next": "^16.3.8",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "19.3.0",
+    "typescript": "^5.7.0"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=20.9"
   }
 }

@@ -1,5 +1,10 @@
 node_modules/
+.next/
+out/
 booking.db
 booking.db-wal
 booking.db-shm
 *.log
+.env
+.env.*
+!.env.example
