@@ -4,13 +4,15 @@
   "private": true,
   "description": "Koya Cohort 4 Task 1 - Clinic booking API (Next.js full stack)",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start"
+    "dev": "node init && next dev",
+    "build": "node init && next build",
+    "start": "node init && next start"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.2.0",
+    "dotenv": "^8.2.0",
     "next": "^16.3.8",
+    "node-fetch": "^3.3.2",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },
