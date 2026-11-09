@@ -46,7 +46,7 @@ Neon Postgres, schema auto-created on first request (`ensureSchema()` in `lib/db
 - `slots (id, provider, slot_start, slot_end)`
 - `bookings (id, slot_id, name, email, status, created_at)` + partial unique index `ux_bookings_confirmed_slot` on `slot_id WHERE status = 'confirmed'` (makes double-booking impossible under concurrency)
 - `idempotency_keys (idem_key, body_hash, status, booking_id)`
-- `rate_attempts (email, minute_start, attempts)`
+- `rate_events (email, attempted_at)` — sliding 60-second window, 5 attempts max
 
 `POST /reset` clears all four tables so runs are repeatable.
 

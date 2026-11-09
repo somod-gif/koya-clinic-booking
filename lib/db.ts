@@ -37,12 +37,12 @@ export function ensureSchema(): Promise<void> {
         status INTEGER NOT NULL,
         booking_id TEXT
       )`;
-      await sql`CREATE TABLE IF NOT EXISTS rate_attempts (
+      await sql`CREATE TABLE IF NOT EXISTS rate_events (
         email TEXT NOT NULL,
-        minute_start BIGINT NOT NULL,
-        attempts INTEGER NOT NULL,
-        PRIMARY KEY (email, minute_start)
+        attempted_at BIGINT NOT NULL
       )`;
+      await sql`CREATE INDEX IF NOT EXISTS ix_rate_events_email ON rate_events (email, attempted_at)`;
+      await sql`DROP TABLE IF EXISTS rate_attempts`;
     })().catch((error) => {
       schemaReady = null;
       throw error;
@@ -123,22 +123,30 @@ export async function listBookings(
 export async function rateBucket(email: string): Promise<{ blocked: boolean; retryAfterSec: number }> {
   await ensureSchema();
   const now = Date.now();
-  const minuteStart = Math.floor(now / 60000) * 60000;
-  const rows = await sql`SELECT attempts FROM rate_attempts WHERE email = ${email} AND minute_start = ${minuteStart}`;
-  const attempts = rows.length > 0 ? Number(rows[0].attempts) : 0;
-  const blocked = attempts >= 5;
-  if (!blocked) {
-    await sql`INSERT INTO rate_attempts (email, minute_start, attempts) VALUES (${email}, ${minuteStart}, 1)
-      ON CONFLICT (email, minute_start) DO UPDATE SET attempts = rate_attempts.attempts + 1`;
+  const windowStart = now - 60_000;
+
+  await sql`DELETE FROM rate_events WHERE email = ${email} AND attempted_at <= ${windowStart}`;
+
+  // Insert only while fewer than 5 attempts sit inside the trailing 60s window.
+  const inserted = await sql`INSERT INTO rate_events (email, attempted_at)
+    SELECT ${email}, ${now}
+    WHERE (SELECT COUNT(*) FROM rate_events WHERE email = ${email} AND attempted_at > ${windowStart}) < 5
+    RETURNING attempted_at`;
+
+  if (inserted.length > 0) {
+    return { blocked: false, retryAfterSec: 0 };
   }
-  const retryAfterSec = Math.max(1, Math.ceil((minuteStart + 60000 - now) / 1000));
-  return { blocked, retryAfterSec };
+
+  const oldest = await sql`SELECT MIN(attempted_at) AS oldest FROM rate_events
+    WHERE email = ${email} AND attempted_at > ${windowStart}`;
+  const oldestMs = oldest.length > 0 && oldest[0].oldest ? Number(oldest[0].oldest) : now;
+  const retryAfterSec = Math.max(1, Math.ceil((oldestMs + 60_000 - now) / 1000));
+  return { blocked: true, retryAfterSec };
 }
 
 export async function clearRateBucket(email: string): Promise<void> {
   await ensureSchema();
-  const minuteStart = Math.floor(Date.now() / 60000) * 60000;
-  await sql`DELETE FROM rate_attempts WHERE email = ${email} AND minute_start = ${minuteStart}`;
+  await sql`DELETE FROM rate_events WHERE email = ${email}`;
 }
 
 export function resetAll(): Promise<unknown[]> {
@@ -147,7 +155,7 @@ export function resetAll(): Promise<unknown[]> {
       sql`DELETE FROM bookings`,
       sql`DELETE FROM slots`,
       sql`DELETE FROM idempotency_keys`,
-      sql`DELETE FROM rate_attempts`,
+      sql`DELETE FROM rate_events`,
     ]),
   );
 }
